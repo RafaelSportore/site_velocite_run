@@ -1,0 +1,477 @@
+<!doctype html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Velocite Run | Performance e Velocidade</title>
+    <link rel="stylesheet" href="style.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+</head>
+
+<body>
+    <div id="login-screen" class="login-overlay">
+        <form id="login-form" class="login-card">
+            <h1 class="logo">Velocite <span>Run</span></h1>
+            <p>Acesse sua conta</p>
+
+            <div class="field">
+                <label for="user-email">E-mail</label>
+                <input type="email" id="user-email" placeholder="Seu e-mail" required />
+            </div>
+
+            <div class="field">
+                <label for="user-pass">Senha</label>
+                <input type="password" id="user-pass" placeholder="Sua senha" required />
+            </div>
+
+            <button type="submit" class="btn-primary">Acessar Site</button>
+            <p id="login-error" class="error-text"></p>
+        </form>
+    </div>
+
+    <div id="main-app" class="is-hidden">
+        <header class="main-header">
+            <div class="container nav-wrapper">
+                <div class="logo">
+                    <a href="#home">Velocite <span>Run</span></a>
+                </div>
+
+                <nav class="nav-main">
+                    <ul class="nav-links">
+                        <li><a href="#home">Início</a></li>
+                        <li><a href="#produtos">Coleção</a></li>
+                        <li><a href="#contato">Contato</a></li>
+                    </ul>
+                </nav>
+
+                <div class="nav-right">
+                    <div class="cart-icon-wrapper" onclick="toggleCart()">
+                        <i class="fas fa-shopping-cart"></i>
+                        <span id="cart-count">0</span>
+                    </div>
+                    <a href="#" id="btn-logout">Sair</a>
+                </div>
+            </div>
+        </header>
+
+        <div id="cart-modal" class="cart-sidebar">
+            <div class="cart-content-wrapper">
+                <div class="cart-header">
+                    <div class="cart-header-title">
+                        <i class="fas fa-shopping-bag"></i>
+                        <h2>Sua Sacola</h2>
+                    </div>
+                    <span class="close-cart" onclick="toggleCart()">&times;</span>
+                </div>
+
+                <div class="cart-scrollable-area">
+                    <div id="cart-items" class="cart-items-list">
+                        <div class="empty-cart-state">
+                            <i class="fas fa-cart-plus"></i>
+                            <p>Sua sacola está vazia.</p>
+                        </div>
+                    </div>
+
+                    <div id="cart-checkout-section" class="cart-summary-area is-hidden">
+                        <div class="summary-details">
+                            <div class="summary-line">
+                                <span>Subtotal</span>
+                                <span id="cart-subtotal-value">R$ 0,00</span>
+                            </div>
+                        </div>
+
+                        <div class="payment-selection">
+                            <h3>Forma de Pagamento</h3>
+                            <div class="payment-options">
+                                <label class="pay-option">
+                                    <input type="radio" name="payment-method" value="pix" checked
+                                        onchange="updatePaymentUI()" />
+                                    <div class="pay-box">
+                                        <i class="fab fa-pix"></i>
+                                        <span>Pix</span>
+                                        <small>-5% OFF</small>
+                                    </div>
+                                </label>
+                                <label class="pay-option">
+                                    <input type="radio" name="payment-method" value="card"
+                                        onchange="updatePaymentUI()" />
+                                    <div class="pay-box">
+                                        <i class="fas fa-credit-card"></i>
+                                        <span>Cartão</span>
+                                        <small>Até 10x</small>
+                                    </div>
+                                </label>
+                            </div>
+
+                            <div id="card-details-area" class="payment-details-pnl is-hidden">
+                                <div class="field">
+                                    <select id="saved-cards-select" onchange="updateInstallments()">
+                                        <option value="">Selecione um cartão</option>
+                                        <option value="visa-1234">Visa •••• 1234</option>
+                                    </select>
+                                    <button type="button" class="btn-add-new-card" onclick="openAddCardModal()">
+                                        <i class="fas fa-plus"></i> Novo Cartão
+                                    </button>
+                                </div>
+
+                                <div class="field">
+                                    <label>Parcelas</label>
+                                    <select id="installments-select"></select>
+                                </div>
+                            </div>
+
+                            <div id="pix-details-area" class="payment-details-pnl">
+                                <div class="pix-discount-badge">
+                                    <i class="fas fa-percentage"></i> Desconto de 5% aplicado!
+                                </div>
+                                <div class="final-price-row">
+                                    <span>Total no Pix:</span>
+                                    <span id="cart-pix-total" class="brand-price">R$ 0,00</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="cart-sticky-footer" class="cart-footer-actions is-hidden">
+                    <button class="btn-primary btn-checkout" onclick="processCheckout()">
+                        Finalizar Pedido <i class="fas fa-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div id="add-card-modal" class="modal-overlay is-hidden">
+            <div class="modal-card">
+                <div class="modal-header">
+                    <h3>Adicionar Novo Cartão</h3>
+                    <span class="close-modal" onclick="closeAddCardModal()">&times;</span>
+                </div>
+                <form id="add-card-form" onsubmit="saveNewCard(event)">
+                    <div class="field">
+                        <label for="new-card-number">Número do Cartão</label>
+                        <input type="text" id="new-card-number" placeholder="0000 0000 0000 0000" maxlength="19" />
+                    </div>
+                    <div class="field-group">
+                        <div class="field">
+                            <label for="new-card-expiry">Validade</label>
+                            <input type="text" id="new-card-expiry" placeholder="MM/AA" maxlength="5" />
+                        </div>
+                        <div class="field">
+                            <label>CVV</label>
+                            <input type="text" placeholder="000" maxlength="3" required />
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label>Nome no Cartão</label>
+                        <input type="text" placeholder="Como escrito no cartão" required />
+                    </div>
+                    <button type="submit" class="btn-primary">Salvar Cartão</button>
+                </form>
+            </div>
+        </div>
+
+        <div id="pix-final-modal" class="modal-overlay is-hidden">
+            <div class="modal-card pix-final-card">
+                <div class="modal-header">
+                    <h3>Finalize seu Pix</h3>
+                    <span class="close-modal" onclick="closePixModal()">&times;</span>
+                </div>
+                <div class="pix-content">
+                    <p>Escaneie o QR Code abaixo com o app do seu banco:</p>
+                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=VelociteRunPixIlustrativo"
+                        alt="QR Code Pix" class="pix-qr" />
+
+                    <p>Ou copie o código abaixo:</p>
+                    <div class="pix-copy-paste">
+                        <input type="text" id="pix-code-input" readonly
+                            value="00020126580014br.gov.bcb.pix0136ilustrativo-demo-velocite-run-store520400005303986540510.005802BR5925Velocite%20Run%20Store6009SAO%20PAULO62070503***6304ABCD" />
+                        <button class="btn-secondary" onclick="copyPixCode()">
+                            Copiar
+                        </button>
+                    </div>
+                    <p class="expire-info">Este código expira em 15 minutos.</p>
+                </div>
+            </div>
+        </div>
+
+        <main>
+            <section id="home" class="hero-section">
+                <div class="container hero-content">
+                    <h1>Velocidade que Inspira</h1>
+                    <p>
+                        A <strong>Velocite Run</strong> une tecnologia de ponta e design
+                        para corredores que buscam o topo.
+                    </p>
+                    <a href="#produtos" class="btn-hero">Conheça a Coleção</a>
+                </div>
+            </section>
+
+            <section id="produtos" class="container section-padding">
+                <h2 class="section-title">Nossa Coleção</h2>
+                <div class="product-grid">
+                    <article class="product-card">
+                        <div class="card-inner">
+                            <div class="card-front">
+                                <img src="Imagens_Trabalho/imgtenis1.jpg.png" alt="Tênis Velocite Nitro G1"
+                                    onclick="flipCard(this)" />
+                                <div class="product-info">
+                                    <h3>Velocite Nitro G1</h3>
+                                    <p class="price">R$ 899,90</p>
+                                    <button class="btn-add-cart-front" onclick="addToCart('Velocite Nitro G1', 899.9)">
+                                        <i class="fas fa-shopping-cart"></i> Adicionar
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="card-back" onclick="flipCard(this)">
+                                <div class="back-content">
+                                    <h3>Velocite Nitro G1</h3>
+                                    <p>
+                                        Focado em retorno de energia e placa de carbono visível.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </article>
+
+                    <article class="product-card">
+                        <div class="card-inner">
+                            <div class="card-front">
+                                <img src="Imagens_Trabalho/imgtenis2.jpg.png" alt="Tênis Turbo Endorphin"
+                                    onclick="flipCard(this)" />
+                                <div class="product-info">
+                                    <h3>Turbo Endorphin</h3>
+                                    <p class="price">R$ 749,00</p>
+                                    <button class="btn-add-cart-front" onclick="addToCart('Turbo Endorphin', 749.0)">
+                                        <i class="fas fa-shopping-cart"></i> Adicionar
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="card-back" onclick="flipCard(this)">
+                                <div class="back-content">
+                                    <h3>Turbo Endorphin</h3>
+                                    <p>Design aerodinâmico para alta velocidade e propulsão.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </article>
+
+                    <article class="product-card">
+                        <div class="card-inner">
+                            <div class="card-front">
+                                <img src="Imagens_Trabalho/imgtenis3.jpg.png" alt="Tênis Cloud Runner X"
+                                    onclick="flipCard(this)" />
+                                <div class="product-info">
+                                    <h3>Cloud Runner X</h3>
+                                    <p class="price">R$ 680,00</p>
+                                    <button class="btn-add-cart-front" onclick="addToCart('Cloud Runner X', 680.0)">
+                                        <i class="fas fa-shopping-cart"></i> Adicionar
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="card-back" onclick="flipCard(this)">
+                                <div class="back-content">
+                                    <h3>Cloud Runner X</h3>
+                                    <p>
+                                        Focado em leveza e conforto extremo para treinos diários.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </article>
+
+                    <article class="product-card">
+                        <div class="card-inner">
+                            <div class="card-front">
+                                <img src="Imagens_Trabalho/imgtenis4.jpg.png" alt="Tênis Apex Speed 4"
+                                    onclick="flipCard(this)" />
+                                <div class="product-info">
+                                    <h3>Apex Speed 4</h3>
+                                    <p class="price">R$ 920,00</p>
+                                    <button class="btn-add-cart-front" onclick="addToCart('Apex Speed 4', 920.0)">
+                                        <i class="fas fa-shopping-cart"></i> Adicionar
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="card-back" onclick="flipCard(this)">
+                                <div class="back-content">
+                                    <h3>Apex Speed 4</h3>
+                                    <p>Otimizado para provas rápidas e recordes pessoais.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </article>
+
+                    <article class="product-card">
+                        <div class="card-inner">
+                            <div class="card-front">
+                                <img src="Imagens_Trabalho/imgtenis5.jpg.png" alt="Tênis Volt Carbon Elite"
+                                    onclick="flipCard(this)" />
+                                <div class="product-info">
+                                    <h3>Volt Carbon Elite</h3>
+                                    <p class="price">R$ 1.200,00</p>
+                                    <button class="btn-add-cart-front" onclick="addToCart('Volt Carbon Elite', 1200.0)">
+                                        <i class="fas fa-shopping-cart"></i> Adicionar
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="card-back" onclick="flipCard(this)">
+                                <div class="back-content">
+                                    <h3>Volt Carbon Elite</h3>
+                                    <p>
+                                        Tecnologia de fibra de carbono para máxima performance.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </article>
+
+                    <article class="product-card">
+                        <div class="card-inner">
+                            <div class="card-front">
+                                <img src="Imagens_Trabalho/imgtenis6.jpg.png" alt="Tênis Sonic Flow Gym"
+                                    onclick="flipCard(this)" />
+                                <div class="product-info">
+                                    <h3>Sonic Flow Gym</h3>
+                                    <p class="price">R$ 550,00</p>
+                                    <button class="btn-add-cart-front" onclick="addToCart('Sonic Flow Gym', 550.0)">
+                                        <i class="fas fa-shopping-cart"></i> Adicionar
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="card-back" onclick="flipCard(this)">
+                                <div class="back-content">
+                                    <h3>Sonic Flow Gym</h3>
+                                    <p>
+                                        Design minimalista, ideal para academia e treinos leves.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </article>
+
+                    <article class="product-card">
+                        <div class="card-inner">
+                            <div class="card-front">
+                                <img src="Imagens_Trabalho/imgtenis7.jpg.png" alt="Tênis Vapor Trail Tempo"
+                                    onclick="flipCard(this)" />
+                                <div class="product-info">
+                                    <h3>Vapor Trail Tempo</h3>
+                                    <p class="price">R$ 830,00</p>
+                                    <button class="btn-add-cart-front" onclick="addToCart('Vapor Trail Tempo', 830.0)">
+                                        <i class="fas fa-shopping-cart"></i> Adicionar
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="card-back" onclick="flipCard(this)">
+                                <div class="back-content">
+                                    <h3>Vapor Trail Tempo</h3>
+                                    <p>
+                                        Desenhado para treinos de ritmo e velocidade constante.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </article>
+
+                    <article class="product-card">
+                        <div class="card-inner">
+                            <div class="card-front">
+                                <img src="Imagens_Trabalho/imgtenis8.jpg.png" alt="Tênis Impact Blue"
+                                    onclick="flipCard(this)" />
+                                <div class="product-info">
+                                    <h3>Impact Blue</h3>
+                                    <p class="price">R$ 499,00</p>
+                                    <button class="btn-add-cart-front" onclick="addToCart('Impact Blue', 499.0)">
+                                        <i class="fas fa-shopping-cart"></i> Adicionar
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="card-back" onclick="flipCard(this)">
+                                <div class="back-content">
+                                    <h3>Impact Blue</h3>
+                                    <p>Amortecimento reforçado, projetado para maratonas.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </article>
+
+                    <article class="product-card">
+                        <div class="card-inner">
+                            <div class="card-front">
+                                <img src="Imagens_Trabalho/imgtenis9.jpg.png" alt="Tênis Grip Master Hybrid"
+                                    onclick="flipCard(this)" />
+                                <div class="product-info">
+                                    <h3>Grip Master Hybrid</h3>
+                                    <p class="price">R$ 670,00</p>
+                                    <button class="btn-add-cart-front" onclick="addToCart('Grip Master Hybrid', 670.0)">
+                                        <i class="fas fa-shopping-cart"></i> Adicionar
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="card-back" onclick="flipCard(this)">
+                                <div class="back-content">
+                                    <h3>Grip Master Hybrid</h3>
+                                    <p>
+                                        Travas na sola, perfeito para transições entre trilha e
+                                        asfalto.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </article>
+
+                    <article class="product-card">
+                        <div class="card-inner">
+                            <div class="card-front">
+                                <img src="Imagens_Trabalho/imgtenis10.jpg.png" alt="Tênis Zenith Pro Marathon"
+                                    onclick="flipCard(this)" />
+                                <div class="product-info">
+                                    <h3>Zenith Pro Marathon</h3>
+                                    <p class="price">R$ 1.100,00</p>
+                                    <button class="btn-add-cart-front"
+                                        onclick="addToCart('Zenith Pro Marathon', 1100.0)">
+                                        <i class="fas fa-shopping-cart"></i> Adicionar
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="card-back" onclick="flipCard(this)">
+                                <div class="back-content">
+                                    <h3>Zenith Pro Marathon</h3>
+                                    <p>Ultra-leve para maratonistas profissionais de elite.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </article>
+                </div>
+            </section>
+
+            <section id="contato" class="contact-section section-padding">
+                <div class="container">
+                    <div class="contact-card">
+                        <h2>Fale com um Especialista</h2>
+                        <form id="contact-form" novalidate>
+                            <input type="text" id="nome" placeholder="Nome Completo" required />
+                            <input type="text" id="cpf" placeholder="CPF (000.000.000-00)" required maxlength="14" />
+                            <textarea id="mensagem" placeholder="Sua dúvida ou mensagem..." required></textarea>
+                            <button type="submit" class="btn-primary">
+                                Enviar Mensagem
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <footer class="main-footer">
+            <p><strong>Velocite Run Store</strong> &copy; 2026 - Trabalho FATEC</p>
+        </footer>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>
