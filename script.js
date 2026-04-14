@@ -74,7 +74,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            // --- INÍCIO DA LÓGICA MATEMÁTICA EXIGIDA ---
+            // --- INÍCIO DA LÓGICA CPF ---
             let soma = 0;
             for (let i = 0; i < 9; ++i) {
                 soma += (i + 1) * cpf[i];
@@ -93,7 +93,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (soma === 10) soma = 0;
 
                 if (soma === cpf[10]) {
-                    // TUDO VÁLIDO
+                    
                     Swal.fire({
                         title: "Enviado!",
                         text: `Obrigado ${nome}, sua mensagem foi enviada com sucesso.`,
@@ -149,9 +149,9 @@ if (inputExpiry) {
     });
 }
 
-// ==========================================
+
 // --- SISTEMA DE CARRINHO ---
-// ==========================================
+
 
 let cart = [];
 
